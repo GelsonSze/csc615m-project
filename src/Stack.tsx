@@ -1,0 +1,37 @@
+export class Stack<T> {
+    private items: T[] = [];
+    private name: string;
+
+    constructor(name: string) { 
+        this.name = name;  // Store the queue name
+    }
+
+    // Push an element onto the stack
+    push(item: T): void {
+        this.items.push(item);
+    }
+
+    // Pop the top element off the stack
+    pop(): T | undefined {
+        return this.items.pop();
+    }
+
+    // Check if the stack is empty
+    isEmpty(): boolean {
+        return this.items.length === 0;
+    }
+
+    // Get the size of the stack
+    size(): number {
+        return this.items.length;
+    }
+
+    // Clear the stack
+    clear(): void {
+        this.items = [];
+    }
+
+    getName(): string{
+        return this.name;
+    }
+}
