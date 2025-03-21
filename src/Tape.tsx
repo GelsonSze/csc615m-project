@@ -1,34 +1,32 @@
-export class Tape<T> {
-    private items: T[] = [];
+export class Tape {
+    private items: string[] = [];
     private name: string;
+    private pointer: number;
 
     constructor(name: string) { 
-        this.name = name;  // Store the queue name
+        this.name = name;  // Store the name
+        this.pointer = 0;
+        this.push("#");
+        this.push("#");
     }
 
-    // Push an element onto the stack
-    push(item: T): void {
+    // Push an element onto the array
+    push(item: string): void {
         this.items.push(item);
     }
 
-    // Pop the top element off the stack
-    pop(): T | undefined {
-        return this.items.pop();
+    // Replace symbol of pointed index onto the tape
+    replace(newSymbol: string): void{
+        this.items[this.pointer] = newSymbol;
     }
 
-    // Check if the stack is empty
-    isEmpty(): boolean {
-        return this.items.length === 0;
+    movePointer(newIndex: number, ){
+        this.pointer = newIndex;
     }
 
     // Get the size of the stack
     size(): number {
         return this.items.length;
-    }
-
-    // Clear the stack
-    clear(): void {
-        this.items = [];
     }
 
     getName(): string{
