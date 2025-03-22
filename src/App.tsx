@@ -1,29 +1,36 @@
 import './App.css'
-import { Queues, Stacks, Tapes , States, InputTape} from './globals';
+import {Queues, Stacks, Tapes , States, InputTape, clearGlobals} from './globals';
 import {Queue} from './Queue'
 import {Stack} from './Stack'
 import {Tape} from './Tape'
-import {WriteState, MoveState, StateTypes, PrintState, ScanState, ReadState, State} from './State';
+import {WriteState, MoveState, StateTypes, PrintState, ScanState, ReadState} from './State';
 
 function App() {
+  let startState: string;
+  let end: boolean = false;
 
   function parseMachine(): void{
+    //Clear dictionaries
+    clearGlobals();
+
     const textArea = document.getElementById("machine-textarea") as HTMLTextAreaElement;
     const text: string = textArea.value.trim()
     const splitText: string[] = text.split(/^(.DATA|.LOGIC)$/gm).filter(i=>i) //split input text via .DATA and .LOGIC and removes empty elements
     const input = document.getElementById("machine-input") as HTMLInputElement;
-    const inputText: string = input.value.trim()
+    const inputString = input.value.trim()
 
     const memoryBlock = splitText[1]
     const logicBlock = splitText[3]
-    console.log(`memory block ${memoryBlock}\n logic block ${logicBlock}`)
+    console.log(`memory block ${memoryBlock}\nlogic block ${logicBlock}`)
     
     parseMemoryBlock(memoryBlock)
     parseLogicBlock(logicBlock)
     console.log(Stacks)
     console.log(States)
-
-    runMachine(inputText)
+    runMachine(inputString)
+    console.log("STACKS AND STATES AFTER RUN MACHINE")
+    console.log(Stacks)
+    console.log(States)
   }
 
   function parseMemoryBlock(memoryBlock: string): void{
@@ -133,11 +140,27 @@ function App() {
         }
         States[stateName].printTransitions();
       }
+      if(Object.keys(States).length == 1){startState = stateName}
+      console.log(`states: ${Object.keys(States)}`)
     })
   }
 
-  function runMachine(input: string){
-    
+  function runMachine(inputString: string){
+    let currentState: string = startState;
+    let test: string[];
+    InputTape.pushString(inputString);
+    InputTape.printItems();
+    // while(!end){
+    // }
+    console.log(`current state: ${currentState}`)
+    test = States[currentState].step();
+    currentState = test[0];
+    console.log(`current state test: ${test}`)
+    test = States[currentState].step();
+    console.log(`current state test2: ${test}`)
+    console.log(`pointer: ${InputTape.getPointer()}`)
+    console.log(`pointer symbol: ${InputTape.getPointerSymbol()}`)
+
   }
 
   return (

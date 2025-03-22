@@ -1,5 +1,5 @@
-export class Stack<T> {
-    private items: T[] = [];
+export class Stack {
+    private items: string[] = [];
     private name: string;
 
     constructor(name: string) { 
@@ -7,15 +7,19 @@ export class Stack<T> {
     }
 
     // Push an element onto the stack
-    push(item: T): void {
+    push(item: string): void {
         this.items.push(item);
     }
 
     // Pop the top element off the stack
-    pop(): T | undefined {
+    pop(): string | undefined {
         return this.items.pop();
     }
 
+    nextSymbol(): string{
+        return this.items[this.items.length-1]
+    }
+    
     // Check if the stack is empty
     isEmpty(): boolean {
         return this.items.length === 0;

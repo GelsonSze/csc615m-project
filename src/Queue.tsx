@@ -1,5 +1,5 @@
-export class Queue<T> {
-    private items: T[] = [];
+export class Queue {
+    private items: string[] = [];
     private name: string;
 
     constructor(name: string) { 
@@ -7,13 +7,17 @@ export class Queue<T> {
     }
 
     // Enqueue an element to the queue
-    enqueue(item: T): void {
+    enqueue(item: string): void {
         this.items.push(item);
     }
 
     // Dequeue an element from the queue
-    dequeue(): T | undefined {
+    dequeue(): string | undefined {
         return this.items.shift();
+    }
+
+    nextSymbol(): string{
+        return this.items[0]
     }
 
     // Check if the queue is empty
