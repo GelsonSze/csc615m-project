@@ -1,13 +1,19 @@
 import './App.css'
-import {Queues, Stacks, Tapes , States, InputTape, clearGlobals} from './globals';
+import {Queues, Stacks, Tapes , States, InputTape, clearGlobals, Nodes, Edges, Node, Edge} from './globals';
 import {Queue} from './Queue'
 import {Stack} from './Stack'
 import {Tape} from './Tape'
 import {WriteState, MoveState, StateTypes, PrintState, ScanState, ReadState} from './State';
+import DirectedGraph from './DirectedGraph';
+import { useState } from 'react';
 
 function App() {
   let startState: string;
+  let drawGraph: boolean = false;
   let end: boolean = false;
+
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   function parseMachine(): void{
     //Clear dictionaries
@@ -19,12 +25,14 @@ function App() {
     const input = document.getElementById("machine-input") as HTMLInputElement;
     const inputString = input.value.trim()
 
-    const memoryBlock = splitText[1]
-    const logicBlock = splitText[3]
+    const memoryBlock = text.includes(".DATA")? splitText[1] : "";
+    const logicBlock = text.includes(".DATA")? splitText[3] : splitText[1]
     console.log(`memory block ${memoryBlock}\nlogic block ${logicBlock}`)
     
     parseMemoryBlock(memoryBlock)
     parseLogicBlock(logicBlock)
+    generateMachineDiagram();
+    console.log("STACKS AND STATES BEFORE RUN MACHINE")
     console.log(Stacks)
     console.log(States)
     runMachine(inputString)
@@ -34,6 +42,7 @@ function App() {
   }
 
   function parseMemoryBlock(memoryBlock: string): void{
+    if(memoryBlock.length == 0){return;}
     const codeLines = memoryBlock.trim().split("\n")
     codeLines.forEach((line)=>{
       const tokens = line.split(" ")
@@ -145,6 +154,26 @@ function App() {
     })
   }
 
+  function generateMachineDiagram(): void{
+      for(const key in States){
+        Nodes.push({id: States[key].getName(), label: States[key].getLabel(), position:{x:0,y:0} })
+        States[key].getTransitions().forEach((transition)=>{
+          const index = Edges.findIndex(edge => edge.source == States[key].getName() && edge.target == transition.dest)
+          const transitionLabel = transition.symbol.concat((transition.replacementSymbol == undefined)? ``: `/${transition.replacementSymbol}`);
+          if(index == -1){
+            Edges.push({source: States[key].getName(), target: transition.dest, label: transitionLabel})
+          }
+          else{
+            Edges[index].label = Edges[index].label+= `, ${transitionLabel}`
+          }
+        })
+      }
+      console.log("CHECK NODES AND EDGES OF JOINTJS")
+      console.log(Nodes);
+      console.log(Edges);
+      drawGraph = true;
+  }
+
   function runMachine(inputString: string){
     let currentState: string = startState;
     let test: string[];
@@ -160,7 +189,11 @@ function App() {
     console.log(`current state test2: ${test}`)
     console.log(`pointer: ${InputTape.getPointer()}`)
     console.log(`pointer symbol: ${InputTape.getPointerSymbol()}`)
+  }
 
+  function updateGraph(){
+    setNodes(Nodes);
+    setEdges(Edges);
   }
 
   return (
@@ -174,10 +207,16 @@ function App() {
         <input id="machine-input"></input>
       </div>
       <div className="card">
-        <button onClick={parseMachine}>
+        <button onClick={function(){parseMachine(); updateGraph()}}>
           Run
         </button>
       </div>
+      {drawGraph &&
+        <div className="card">
+          <DirectedGraph nodes={nodes} edges={edges}/>
+        </div>
+      }
+
     </>
   )
 }

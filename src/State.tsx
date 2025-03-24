@@ -14,6 +14,22 @@ export const enum StateTypes{
     accept = "ACCEPT",
     reject = "REJECT",
 }
+
+export const StateLabels = {
+    "WRITE" : "W",
+    "PRINT" : "P",
+    "SCAN" : "S",
+    "SCAN LEFT" : "SL",
+    "SCAN RIGHT" : "SR",
+    "READ" : "READ",
+    "RIGHT" : "R",
+    "LEFT" : "L",
+    "UP" : "U",
+    "DOWN" : "D",
+    "ACCEPT" : "ACCEPT",
+    "REJECT" : "REJECT",
+}
+
 export interface Transition{
     symbol: string,
     dest: string,
@@ -23,11 +39,13 @@ export class State {
     private name: string;
     private type: StateTypes;
     private transitions: Transition[];
+    private label: string; //label to be placed on graph
 
     public constructor(name: string, type: StateTypes) { 
         this.name = name; 
         this.type = type; 
         this.transitions = [];
+        this.label = name + "-" + StateLabels[type.toString() as keyof typeof StateLabels];
     }
 
     public getName(): string{
@@ -51,6 +69,9 @@ export class State {
             console.log(`Transitions for state ${this.name}: \nsymbol: ${transition.symbol}, destination: ${transition.dest}, replacement: ${transition.replacementSymbol}`)
         })
     }
+
+    public getLabel():string{return this.label}
+    public setLabel(label: string){this.label = label}
 
     public step():string[]{return []};
 }
@@ -87,7 +108,10 @@ export class ScanState extends State{
 
 export class WriteState extends State{
     private memoryObject: string = ""; //name of memoryobject
-    public setMemoryObject(memoryObject: string){this.memoryObject = memoryObject;}
+    public setMemoryObject(memoryObject: string){
+        this.memoryObject = memoryObject; 
+        this.setLabel(this.getLabel().concat(`-${memoryObject}`))
+    }
     public getMemoryObject(): string{return this.memoryObject;}
 
     public step(): string[]{
@@ -107,7 +131,10 @@ export class WriteState extends State{
 
 export class ReadState extends State{
     private memoryObject: string = ""; //name of memoryobject
-    public setMemoryObject(memoryObject: string){this.memoryObject = memoryObject;}
+    public setMemoryObject(memoryObject: string){
+        this.memoryObject = memoryObject; 
+        this.setLabel(this.getLabel().concat(`-${memoryObject}`))
+    }
     public getMemoryObject(): string{return this.memoryObject;}
 
     public step(): string[]{
@@ -132,7 +159,10 @@ export class ReadState extends State{
 
 export class MoveState extends State{
     private memoryObject: string = ""; //name of memoryobject
-    public setMemoryObject(memoryObject: string){this.memoryObject = memoryObject;}
+    public setMemoryObject(memoryObject: string){
+        this.memoryObject = memoryObject; 
+        this.setLabel(this.getLabel().concat(`-${memoryObject}`))
+    }
     public getMemoryObject(): string{return this.memoryObject;}
 
     public step(): string[]{

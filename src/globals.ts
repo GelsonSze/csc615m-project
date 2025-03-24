@@ -18,6 +18,21 @@ export function clearGlobals(): void{
     Tapes_2D = {};
     States = {};
     InputTape.clearItems();
+    Nodes = [];
+    Edges = [];
 }
 
-export const enum Direction{Up, Down, Left, Right}
+//globals for GUI
+export interface Node {
+    id: string;
+    label: string;
+    position: { x: number; y: number };
+}
+export interface Edge {
+    source: string;
+    target: string;
+    label: string;
+}
+
+export let Nodes: Node[] = [];
+export let Edges: Edge[] = [];
