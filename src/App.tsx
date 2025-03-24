@@ -9,11 +9,11 @@ import { useState } from 'react';
 
 function App() {
   let startState: string;
-  let drawGraph: boolean = false;
   let end: boolean = false;
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [drawGraph, setDrawGraph] = useState<boolean>(false);
 
   function parseMachine(): void{
     //Clear dictionaries
@@ -171,7 +171,7 @@ function App() {
       console.log("CHECK NODES AND EDGES OF JOINTJS")
       console.log(Nodes);
       console.log(Edges);
-      drawGraph = true;
+      setDrawGraph(true);
   }
 
   function runMachine(inputString: string){
