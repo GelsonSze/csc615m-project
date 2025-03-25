@@ -6,6 +6,7 @@ import { Node, Edge} from './globals';
 interface DirectedGraphProps {
     nodes: Node[];
     edges: Edge[];
+    startState: string;
 }
 
 function calculateLayout (nodes: Node[], edges: Edge[]) {
@@ -41,9 +42,19 @@ function calculateLayout (nodes: Node[], edges: Edge[]) {
     return positionedNodes;
 };
 
-const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges})=>{
+
+
+const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})=>{
     const graphRef = useRef<joint.dia.Graph>(null);
     const paperRef = useRef<joint.dia.Paper>(null);
+    const verticesTool = new joint.linkTools.Vertices({
+        redundancyRemoval: false,
+        snapRadius: 10,
+        vertexAdding: false,
+    });
+    const toolsView = new joint.dia.ToolsView({
+        tools: [verticesTool,]
+    });
 
     useEffect(()=>{
         const graph = new joint.dia.Graph();
@@ -69,7 +80,8 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges})=>{
         const nodeMap: { [key: string]: joint.shapes.standard.Rectangle } = {};
 
         positionedNodes.forEach((node) => {
-            const circle = new joint.shapes.standard.Circle({
+            //normal state
+            let circle = new joint.shapes.standard.Circle({
                 id: node.id,
                 position: node.position,
                 size: { width: 80, height: 80 },
@@ -83,9 +95,44 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges})=>{
                     },
                 },
             });
+            if(node.label == "accept"){
+                circle = new joint.shapes.standard.Path({
+                    id: node.id,
+                    position: node.position,
+                    size: { width: 80, height: 80 },
+                    attrs: {
+                        body: {
+                            d: 'M 40 0 A 40 40 0 1 1 40 80 A 40 40 0 1 1 40 0 Z M 40 5 A 35 35 0 1 1 40 75 A 35 35 0 1 1 40 5 Z',
+                            stroke: 'black',
+                            fill: '#6a6c8a',
+                        },
+                        label: {
+                            text:node.label,
+                            textAnchor: 'middle',
+                        },
+                    },
+                });
+            }else if(node.id == startState){
+                //starting state
+                circle = new joint.shapes.standard.Path({
+                    id: node.id,
+                    position: node.position,
+                    size: { width: 80, height: 80 },
+                    attrs: {
+                        body: {
+                            d: 'M -30,20 L 0,40 L -30,60 Z M 40 0 A 40 40 0 1 1 40 80 A 40 40 0 1 1 40 0 Z',//M -triangle, 2nd M - circle
+                            stroke: 'black',
+                            fill: '#6a6c8a',
+                        },
+                        label: {
+                            text:node.label,
+                            textAnchor: 'middle',
+                        },
+                    },
+                });
+            }
             circle.addTo(graph);
             nodeMap[node.id] = circle;
-            console.log(`node position: ${node.position.x}, ${node.position.y}`)
         });
         edges.forEach((edge) => {
             const link = new joint.shapes.standard.Link({
@@ -141,6 +188,14 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges})=>{
                 link.vertices([{x: vertx,y:verty}]);
             }
             link.addTo(graph);
+            const linkView = link.findView(paper);
+            linkView.addTools(toolsView)
+            paper.on('link:mouseenter', function(linkView) {
+                linkView.addTools(toolsView);
+            });
+            paper.on('link:mouseleave', function(linkView) {
+                linkView.removeTools();
+            });
         });
     })
     return (

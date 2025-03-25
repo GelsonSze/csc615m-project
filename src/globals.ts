@@ -8,8 +8,8 @@ export let Stacks: {[name: string]: Stack} = {};
 export let Tapes: {[name : string]: Tape} = {};
 export let States: {[name: string]: State} = {};
 export let Tapes_2D: {[name: string]: Tape_2D} = {};
+export let MachineVariables = {output: "", startState: "", hasAccept: false, hasReject: false, end: false, accept: false, reject: false};
 export const InputTape: Tape = new Tape("InputTape");
-export const MachineOutput: string = "";
 
 export function clearGlobals(): void{
     Queues = {};
@@ -20,6 +20,15 @@ export function clearGlobals(): void{
     InputTape.clearItems();
     Nodes = [];
     Edges = [];
+    MachineVariables = {
+        output: "",
+        startState: "",
+        hasAccept: false,
+        hasReject: false,
+        end: false,
+        accept: false,
+        reject: false
+    }
 }
 
 //globals for GUI

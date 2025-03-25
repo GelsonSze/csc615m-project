@@ -1,5 +1,5 @@
 import './App.css'
-import {Queues, Stacks, Tapes , States, InputTape, clearGlobals, Nodes, Edges, Node, Edge} from './globals';
+import {Queues, Stacks, Tapes , States, InputTape, clearGlobals, Nodes, Edges, Node, Edge, MachineVariables} from './globals';
 import {Queue} from './Queue'
 import {Stack} from './Stack'
 import {Tape} from './Tape'
@@ -8,11 +8,9 @@ import DirectedGraph from './DirectedGraph';
 import { useState } from 'react';
 
 function App() {
-  let startState: string;
-  let end: boolean = false;
-
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [startState, setStartState] = useState<string>("");
   const [drawGraph, setDrawGraph] = useState<boolean>(false);
 
   function parseMachine(): void{
@@ -35,6 +33,7 @@ function App() {
     console.log("STACKS AND STATES BEFORE RUN MACHINE")
     console.log(Stacks)
     console.log(States)
+    console.log("RUN MACHINE")
     runMachine(inputString)
     console.log("STACKS AND STATES AFTER RUN MACHINE")
     console.log(Stacks)
@@ -149,8 +148,13 @@ function App() {
         }
         States[stateName].printTransitions();
       }
-      if(Object.keys(States).length == 1){startState = stateName}
+      if(Object.keys(States).length > 0 && MachineVariables.startState == ""){
+        MachineVariables.startState = stateName; 
+        console.log(`set start state: ${MachineVariables.startState}`)
+      }
+      
       console.log(`states: ${Object.keys(States)}`)
+      console.log(`start state ${MachineVariables.startState}`)
     })
   }
 
@@ -175,25 +179,29 @@ function App() {
   }
 
   function runMachine(inputString: string){
-    let currentState: string = startState;
+    let currentState: string = MachineVariables.startState;
     let test: string[];
     InputTape.pushString(inputString);
     InputTape.printItems();
-    // while(!end){
-    // }
-    console.log(`current state: ${currentState}`)
-    test = States[currentState].step();
-    currentState = test[0];
-    console.log(`current state test: ${test}`)
-    test = States[currentState].step();
-    console.log(`current state test2: ${test}`)
-    console.log(`pointer: ${InputTape.getPointer()}`)
-    console.log(`pointer symbol: ${InputTape.getPointerSymbol()}`)
+    while(!MachineVariables.end){
+      console.log("LOOP DELIMITER")
+      console.log(`current state: ${currentState}`)
+      test = States[currentState].step();
+      if(test.length == 0){MachineVariables.end = true;}
+      currentState = test[0];
+      console.log(`state after step: ${test}`)
+      console.log(`pointer: ${InputTape.getPointer()}`)
+      console.log(`pointer symbol: ${InputTape.getPointerSymbol()}`)
+      // console.log(`Stack elements: ${Stacks["S1"].printItems()}`)
+      console.log("--------------------------------")
+    }
+    console.log(MachineVariables)
   }
 
   function updateGraph(){
     setNodes(Nodes);
     setEdges(Edges);
+    setStartState(MachineVariables.startState);
   }
 
   return (
@@ -213,7 +221,7 @@ function App() {
       </div>
       {drawGraph &&
         <div className="card">
-          <DirectedGraph nodes={nodes} edges={edges}/>
+          <DirectedGraph nodes={nodes} edges={edges} startState={startState}/>
         </div>
       }
 

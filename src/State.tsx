@@ -1,4 +1,4 @@
-import { InputTape, MachineOutput, Queues, Stacks, Tapes, Tapes_2D } from './globals';
+import { InputTape, Queues, Stacks, Tapes, Tapes_2D, MachineVariables, States} from './globals';
 
 export const enum StateTypes{
     w = "WRITE",
@@ -14,7 +14,6 @@ export const enum StateTypes{
     accept = "ACCEPT",
     reject = "REJECT",
 }
-
 export const StateLabels = {
     "WRITE" : "W",
     "PRINT" : "P",
@@ -26,8 +25,8 @@ export const StateLabels = {
     "LEFT" : "L",
     "UP" : "U",
     "DOWN" : "D",
-    "ACCEPT" : "ACCEPT",
-    "REJECT" : "REJECT",
+    "ACCEPT" : "accept",
+    "REJECT" : "reject",
 }
 
 export interface Transition{
@@ -62,6 +61,14 @@ export class State {
 
     public addTransition(symbol: string, dest: string, replacementSymbol?: string): void{
         this.transitions.push({symbol, dest, replacementSymbol});
+        if(!MachineVariables.hasAccept && dest == "accept"){
+            States["accept"] = new AcceptState();
+            MachineVariables.hasAccept = true
+        }
+        else if(!MachineVariables.hasReject && dest == "reject"){
+            States["reject"] = new RejectState();
+            MachineVariables.hasReject = true;
+        }
     }
 
     public printTransitions(){
@@ -81,7 +88,7 @@ export class PrintState extends State{
         const transitionArr = this.getTransitions();
         const destStates: string[]= [];
         transitionArr.forEach((transition)=>{
-            MachineOutput.concat(transition.symbol)
+            MachineVariables.output += transition.symbol
             destStates.push(transition.dest)
         })
         return destStates
@@ -122,7 +129,6 @@ export class WriteState extends State{
             if(this.memoryObject in Queues){Queues[this.memoryObject].enqueue(transition.symbol)}
             else if(this.memoryObject in Stacks){Stacks[this.memoryObject].push(transition.symbol)}
             else {throw Error("Writing to invalid memory object")}
-            
             destStates.push(transition.dest)
         })
         return destStates
@@ -185,13 +191,29 @@ export class MoveState extends State{
 }
 
 export class AcceptState extends State{
-    public acceptInput(): void{
-
+    public constructor(){
+        super("accept", StateTypes.accept);
+        this.setLabel("accept")
+    }
+    public step(): string[]{
+        if(MachineVariables.hasAccept && !MachineVariables.end && !MachineVariables.accept){
+            MachineVariables.accept = true;
+            MachineVariables.end = true;
+        }
+        return [];
     }
 }
 
 export class RejectState extends State{
-    public rejectInput(): void{
-        
+    public constructor(){
+        super("reject", StateTypes.reject);
+        this.setLabel("reject")
+    }
+    public step(): string[]{
+        if(MachineVariables.hasReject && !MachineVariables.end && !MachineVariables.reject){
+            MachineVariables.reject = true;
+            MachineVariables.end = true;
+        }
+        return [];
     }
 }

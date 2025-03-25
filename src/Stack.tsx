@@ -38,4 +38,8 @@ export class Stack {
     getName(): string{
         return this.name;
     }
+
+    printItems(): void {
+        console.log(this.items.toString())
+    }
 }
