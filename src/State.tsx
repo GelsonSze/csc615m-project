@@ -1,4 +1,4 @@
-import { InputTape, Queues, Stacks, Tapes, Tapes_2D, MachineVariables, States} from './globals';
+import { Queues, Stacks, Tapes, Tapes_2D, MachineVariables, States} from './globals';
 
 export const enum StateTypes{
     w = "WRITE",
@@ -89,6 +89,8 @@ export class PrintState extends State{
         const destStates: string[]= [];
         transitionArr.forEach((transition)=>{
             MachineVariables.output += transition.symbol
+            console.log("WHY NO WORK?")
+            console.log(MachineVariables.output)
             destStates.push(transition.dest)
         })
         return destStates
@@ -99,10 +101,10 @@ export class ScanState extends State{
     public step(): string[]{
         const transitionArr = this.getTransitions();
         const destStates: string[]= [];
-        if(this.getType() === StateTypes.sl){InputTape.movePointerLeft()}
-        else{InputTape.movePointerRight()}
+        if(this.getType() === StateTypes.sl){MachineVariables.inputTape.movePointerLeft()}
+        else{MachineVariables.inputTape.movePointerRight()}
 
-        const curSymbol: string= InputTape.getPointerSymbol();
+        const curSymbol: string= MachineVariables.inputTape.getPointerSymbol();
         transitionArr.forEach((transition)=>{
             if(transition.symbol == curSymbol){
                 destStates.push(transition.dest)
@@ -150,14 +152,16 @@ export class ReadState extends State{
 
         if(this.memoryObject in Queues){readSymbol = Queues[this.memoryObject].dequeue()}
         else if(this.memoryObject in Stacks){readSymbol = Stacks[this.memoryObject].pop()}
-        else {throw TypeError("Writing to invalid memory object")}
+        else {throw Error("Writing to invalid memory object")}
 
         transitionArr.forEach((transition)=>{
             if(readSymbol == transition.symbol){
                 destStates.push(transition.dest)
             }
         })
-        if(destStates.length == 0){throw Error("Read symbol has no valid state transtitions")}
+        if(destStates.length == 0){throw Error(`Read symbol has no valid state transtitions
+            Memory object: ${this.memoryObject}, Read symbol: ${readSymbol}
+            `)}
 
         return destStates
     }
@@ -174,15 +178,51 @@ export class MoveState extends State{
     public step(): string[]{
         const transitionArr = this.getTransitions();
         const destStates: string[]= [];
+        let curSymbol: string;
 
-        if(this.getType() == StateTypes.r){Tapes[this.memoryObject].movePointerRight()}
-        else if(this.getType() == StateTypes.l){Tapes[this.memoryObject].movePointerLeft()}
-        else if(this.getType() == StateTypes.u){Tapes_2D[this.memoryObject].getName()}
-        else if(this.getType() == StateTypes.d){Tapes_2D[this.memoryObject].getName()}
+        if(this.getType() == StateTypes.r){
+            console.log("THIS RIGHT TAPE IS ANNOYING")
+            console.log(Tapes[this.memoryObject])
+            if(this.memoryObject in Tapes){
+                Tapes[this.memoryObject].movePointerRight();
+                curSymbol = Tapes[this.memoryObject].getPointerSymbol();
+            }
+            else if(this.memoryObject in Tapes_2D){
+                Tapes_2D[this.memoryObject].movePointerRight();
+                curSymbol = Tapes_2D[this.memoryObject].getPointerSymbol();
+            }
+        }
+        else if(this.getType() == StateTypes.l){
+            console.log("THIS LEFT TAPE IS ANNOYING")
+            console.log(Tapes[this.memoryObject])
+            if(this.memoryObject in Tapes){
+                Tapes[this.memoryObject].movePointerLeft();
+                curSymbol = Tapes[this.memoryObject].getPointerSymbol();
+            }
+            else if(this.memoryObject in Tapes_2D){
+                Tapes_2D[this.memoryObject].movePointerLeft();
+                curSymbol = Tapes_2D[this.memoryObject].getPointerSymbol();
+            }
+        }
+        else if(this.getType() == StateTypes.u){
+            Tapes_2D[this.memoryObject].movePointerUp();
+            curSymbol = Tapes_2D[this.memoryObject].getPointerSymbol();
+        }
+        else if(this.getType() == StateTypes.d){
+            Tapes_2D[this.memoryObject].movePointerDown();
+            curSymbol = Tapes_2D[this.memoryObject].getPointerSymbol();
+        }
 
-        const curSymbol: string= Tapes[this.memoryObject].getPointerSymbol();
         transitionArr.forEach((transition)=>{
             if(transition.symbol == curSymbol){
+                if(transition.replacementSymbol !== undefined){
+                    if(this.memoryObject in Tapes){
+                        Tapes[this.memoryObject].replace(transition.replacementSymbol);
+                    }
+                    else if(this.memoryObject in Tapes_2D){
+                        Tapes_2D[this.memoryObject].replace(transition.replacementSymbol);
+                    }
+                }
                 destStates.push(transition.dest)
             }
         })

@@ -1,8 +1,8 @@
 import './App.css'
-import {Queues, Stacks, Tapes , States, InputTape, clearGlobals, Nodes, Edges, Node, Edge, MachineVariables} from './globals';
+import {Queues, Stacks, Tapes , States, clearGlobals, Nodes, Edges, Node, Edge, MachineVariables, Tapes_2D} from './globals';
 import {Queue} from './Queue'
 import {Stack} from './Stack'
-import {Tape} from './Tape'
+import {Tape, Tape_2D} from './Tape'
 import {WriteState, MoveState, StateTypes, PrintState, ScanState, ReadState} from './State';
 import DirectedGraph from './DirectedGraph';
 import { useState } from 'react';
@@ -30,13 +30,27 @@ function App() {
     parseMemoryBlock(memoryBlock)
     parseLogicBlock(logicBlock)
     generateMachineDiagram();
-    console.log("STACKS AND STATES BEFORE RUN MACHINE")
+    console.log("MEMORY AND STATES BEFORE RUN MACHINE")
+    console.log("STACKS")
     console.log(Stacks)
+    console.log("QUEUES")
+    console.log(Queues)
+    console.log("TAPES")
+    console.log(Tapes)
+    console.log("2D TAPES")
+    console.log(Tapes_2D)
+    console.log("STATES")
     console.log(States)
     console.log("RUN MACHINE")
     runMachine(inputString)
     console.log("STACKS AND STATES AFTER RUN MACHINE")
+    console.log("STACKS")
     console.log(Stacks)
+    console.log("QUEUES")
+    console.log(Queues)
+    console.log("TAPES")
+    console.log(Tapes_2D)
+    console.log("STATES")
     console.log(States)
   }
 
@@ -58,9 +72,22 @@ function App() {
           }
           case "TAPE":{
             Tapes[tokens[1]] = new Tape(tokens[1])
+            console.log("LOGGING TAPE")
+            console.log(Object.keys(Tapes).length)
+            if(Object.keys(Tapes).length == 1){
+              MachineVariables.inputTape = Tapes[tokens[1]]
+              console.log(MachineVariables.inputTape)
+            }
             break;
           }
           case "2D_TAPE":{
+            Tapes_2D[tokens[1]] = new Tape_2D(tokens[1])
+            console.log("LOGGING TAPE")
+            console.log(Object.keys(Tapes_2D).length)
+            if(Object.keys(Tapes_2D).length == 1){
+              MachineVariables.inputTape = Tapes_2D[tokens[1]].getItemRow();
+              console.log(MachineVariables.inputTape)
+            }
             break;
           }
         }
@@ -163,7 +190,7 @@ function App() {
         Nodes.push({id: States[key].getName(), label: States[key].getLabel(), position:{x:0,y:0} })
         States[key].getTransitions().forEach((transition)=>{
           const index = Edges.findIndex(edge => edge.source == States[key].getName() && edge.target == transition.dest)
-          const transitionLabel = transition.symbol.concat((transition.replacementSymbol == undefined)? ``: `/${transition.replacementSymbol}`);
+          const transitionLabel = transition.symbol.concat((transition.replacementSymbol !== undefined && transition.replacementSymbol != transition.symbol)? `/${transition.replacementSymbol}` : ``);
           if(index == -1){
             Edges.push({source: States[key].getName(), target: transition.dest, label: transitionLabel})
           }
@@ -181,8 +208,10 @@ function App() {
   function runMachine(inputString: string){
     let currentState: string = MachineVariables.startState;
     let test: string[];
-    InputTape.pushString(inputString);
-    InputTape.printItems();
+    MachineVariables.inputTape.pushString(inputString);
+    MachineVariables.inputTape.printItems();
+    console.log("MACHINE VARIABLES BEFORE RUN")
+    console.log(MachineVariables)
     while(!MachineVariables.end){
       console.log("LOOP DELIMITER")
       console.log(`current state: ${currentState}`)
@@ -190,11 +219,12 @@ function App() {
       if(test.length == 0){MachineVariables.end = true;}
       currentState = test[0];
       console.log(`state after step: ${test}`)
-      console.log(`pointer: ${InputTape.getPointer()}`)
-      console.log(`pointer symbol: ${InputTape.getPointerSymbol()}`)
-      // console.log(`Stack elements: ${Stacks["S1"].printItems()}`)
+      console.log(`pointer: ${MachineVariables.inputTape.getPointer()}`)
+      console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
+      console.log(Tapes_2D["T1"])
       console.log("--------------------------------")
     }
+    console.log("MACHINE VARIABLES AFTER RUN")
     console.log(MachineVariables)
   }
 

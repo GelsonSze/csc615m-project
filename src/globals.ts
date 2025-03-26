@@ -8,8 +8,7 @@ export let Stacks: {[name: string]: Stack} = {};
 export let Tapes: {[name : string]: Tape} = {};
 export let States: {[name: string]: State} = {};
 export let Tapes_2D: {[name: string]: Tape_2D} = {};
-export let MachineVariables = {output: "", startState: "", hasAccept: false, hasReject: false, end: false, accept: false, reject: false};
-export const InputTape: Tape = new Tape("InputTape");
+export let MachineVariables = {output: "", startState: "", hasAccept: false, hasReject: false, end: false, accept: false, reject: false, inputTape: new Tape("InputTape")};
 
 export function clearGlobals(): void{
     Queues = {};
@@ -17,7 +16,6 @@ export function clearGlobals(): void{
     Tapes = {};
     Tapes_2D = {};
     States = {};
-    InputTape.clearItems();
     Nodes = [];
     Edges = [];
     MachineVariables = {
@@ -27,7 +25,8 @@ export function clearGlobals(): void{
         hasReject: false,
         end: false,
         accept: false,
-        reject: false
+        reject: false,
+        inputTape: new Tape("InputTape")
     }
 }
 

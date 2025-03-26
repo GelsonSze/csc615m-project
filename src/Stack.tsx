@@ -13,7 +13,11 @@ export class Stack {
 
     // Pop the top element off the stack
     pop(): string | undefined {
-        return this.items.pop();
+        const symbol = this.items.pop();
+        if(symbol == undefined){
+            return "#";
+        }
+        return symbol;
     }
 
     nextSymbol(): string{

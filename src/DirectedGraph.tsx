@@ -9,40 +9,54 @@ interface DirectedGraphProps {
     startState: string;
 }
 
+const MAX_CONTAINER_WIDTH = 1280;
+
 function calculateLayout (nodes: Node[], edges: Edge[]) {
     const graph = new dagre.graphlib.Graph();
-    graph.setGraph({
-        rankdir: 'LR', // Layout direction: Left to Right (LR), Top to Bottom (TB)
-        align: 'UL',   // Alignment: Upper Left (UL), Lower Right (LR), etc.
-        nodesep: 50,   // Separation between nodes
-        ranksep: 100, // Separation between ranks
-    });
-    graph.setDefaultEdgeLabel(() => ({}));
 
+    graph.setDefaultEdgeLabel(() => ({}));
     nodes.forEach((node) => {
-        graph.setNode(node.id, { width: 100, height: 40 }); // Node dimensions
+        graph.setNode(node.id, { width: 80, height: 80 }); // Node dimensions
     });
 
     edges.forEach((edge) => {
         graph.setEdge(edge.source, edge.target);
     });
 
-    // Calculate layout
-    dagre.layout(graph);
+    //update node position for L-R, U-D layout
+    const offset = 50
+    let currentRowX = offset;
+    let currentRowY = offset;
+    let currentRowMaxHeight = 0;
+    const positionedNodes: Node[] = [];
 
-    // Update node positions based on layout
-    const positionedNodes = nodes.map((node) => {
-        const dagreNode = graph.node(node.id);
-        return {
+    nodes
+        .map(node => ({
             ...node,
-            position: { x: dagreNode.x, y: dagreNode.y },
-        };
-    });
+            position: { x: graph.node(node.id).x, y: graph.node(node.id).y },
+            width: 80,
+            height: 80
+        }))
+        .sort((a, b) => a.position.x - b.position.x) // Sort nodes left to right
+        .forEach(node => {
+            if (currentRowX + node.width > MAX_CONTAINER_WIDTH) {
+                // Move to the next row
+                currentRowX = offset;
+                currentRowY += currentRowMaxHeight + 80; // Move down 
+                currentRowMaxHeight = 0;
+            }
 
+            // Assign new position
+            node.position.x = currentRowX;
+            node.position.y = currentRowY;
+
+            currentRowX += node.width + 50; // Move right (width + nodesep)
+            currentRowMaxHeight = Math.max(currentRowMaxHeight, node.height);
+
+            positionedNodes.push(node);
+        });
     return positionedNodes;
 };
-
-
 
 const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})=>{
     const graphRef = useRef<joint.dia.Graph>(null);
@@ -60,11 +74,12 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
         const graph = new joint.dia.Graph();
         graphRef.current = graph;
 
+        const positionedNodes = calculateLayout(nodes, edges);
         const paper = new joint.dia.Paper({
             el: document.getElementById("canvas"),
             model: graph,
             width: 1280,
-            height: 600,
+            height: 800,
             gridSize: 10,
             drawGrid: false,
             background: {
@@ -76,7 +91,6 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
         });
         paperRef.current = paper;
 
-        const positionedNodes = calculateLayout(nodes, edges);
         const nodeMap: { [key: string]: joint.shapes.standard.Rectangle } = {};
 
         positionedNodes.forEach((node) => {
@@ -157,7 +171,7 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                             attrs: {
                                 text: {
                                     text: edge.label,
-                                    fill: 'black',
+                                    fill: 'red',
                                     fontSize: 12,
                                     textAnchor: 'middle',
                                     yAlignment: 'middle',

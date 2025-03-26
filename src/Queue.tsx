@@ -13,7 +13,11 @@ export class Queue {
 
     // Dequeue an element from the queue
     dequeue(): string | undefined {
-        return this.items.shift();
+        const symbol = this.items.shift();
+        if(symbol == undefined){
+            return "#";
+        }
+        return symbol;
     }
 
     nextSymbol(): string{
