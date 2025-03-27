@@ -70,6 +70,10 @@ export class Tape {
         this.items.forEach((item)=>{itemString += item})
         console.log(itemString)
     }
+
+    getItems(): string[]{
+        return this.items;
+    }
 }
 
 export class Tape_2D {
@@ -171,4 +175,7 @@ export class Tape_2D {
         return this.name
     }
 
+    getItems(): {[name: string]: Tape}{
+        return this.items
+    }
 }

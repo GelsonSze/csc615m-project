@@ -42,4 +42,8 @@ export class Queue {
     getName(): string{
         return this.name;
     }
+
+    getItems(): string[]{
+        return this.items;
+    }
 }

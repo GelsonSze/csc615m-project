@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as joint from '@joint/core';
 import * as dagre from 'dagre';
 import { Node, Edge} from './globals';
@@ -7,6 +7,7 @@ interface DirectedGraphProps {
     nodes: Node[];
     edges: Edge[];
     startState: string;
+    currentState: string;
 }
 
 const MAX_CONTAINER_WIDTH = 1280;
@@ -58,27 +59,27 @@ function calculateLayout (nodes: Node[], edges: Edge[]) {
     return positionedNodes;
 };
 
-const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})=>{
+const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState, currentState})=>{
+    const [firstRender, setFirstRender] = useState<boolean>(true);
     const graphRef = useRef<joint.dia.Graph>(null);
-    const paperRef = useRef<joint.dia.Paper>(null);
-    const verticesTool = new joint.linkTools.Vertices({
-        redundancyRemoval: false,
-        snapRadius: 10,
-        vertexAdding: false,
-    });
-    const toolsView = new joint.dia.ToolsView({
-        tools: [verticesTool,]
-    });
+    const [paper, setPaper] = useState<joint.dia.Paper | null>(null);
+    const positionedNodes = useRef<Node[]>([]);
 
     useEffect(()=>{
         const graph = new joint.dia.Graph();
         graphRef.current = graph;
-
-        const positionedNodes = calculateLayout(nodes, edges);
+        console.log("TESTING RENDER")
+        console.log(firstRender)
+        if(firstRender){
+            positionedNodes.current = calculateLayout(nodes,edges);
+            setFirstRender(false);
+            console.log(positionedNodes)
+        }
+        console.log(positionedNodes)
         const paper = new joint.dia.Paper({
             el: document.getElementById("canvas"),
             model: graph,
-            width: 1280,
+            width: 1216,
             height: 800,
             gridSize: 10,
             drawGrid: false,
@@ -89,11 +90,12 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                 name: 'boundary'
             },
         });
-        paperRef.current = paper;
+        // paperRef.current = paper;
+        setPaper(paper);
 
         const nodeMap: { [key: string]: joint.shapes.standard.Rectangle } = {};
 
-        positionedNodes.forEach((node) => {
+        positionedNodes.current.forEach((node) => {
             //normal state
             let circle = new joint.shapes.standard.Circle({
                 id: node.id,
@@ -101,7 +103,7 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                 size: { width: 80, height: 80 },
                 attrs: {
                     body: {
-                        fill: '#6a6c8a',
+                        fill: currentState == node.id? '#FFFF00' : '#6a6c8a',
                     },
                     label: {
                         text:node.label,
@@ -118,7 +120,7 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                         body: {
                             d: 'M 40 0 A 40 40 0 1 1 40 80 A 40 40 0 1 1 40 0 Z M 40 5 A 35 35 0 1 1 40 75 A 35 35 0 1 1 40 5 Z',
                             stroke: 'black',
-                            fill: '#6a6c8a',
+                            fill: currentState == node.id? '#FFFF00' : '#6a6c8a',
                         },
                         label: {
                             text:node.label,
@@ -136,7 +138,7 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                         body: {
                             d: 'M -30,20 L 0,40 L -30,60 Z M 40 0 A 40 40 0 1 1 40 80 A 40 40 0 1 1 40 0 Z',//M -triangle, 2nd M - circle
                             stroke: 'black',
-                            fill: '#6a6c8a',
+                            fill: currentState == node.id? '#FFFF00' : '#6a6c8a',
                         },
                         label: {
                             text:node.label,
@@ -202,6 +204,15 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                 link.vertices([{x: vertx,y:verty}]);
             }
             link.addTo(graph);
+            //vertice tools for link vertices
+            const verticesTool = new joint.linkTools.Vertices({
+                redundancyRemoval: false,
+                snapRadius: 10,
+                vertexAdding: false,
+            });
+            const toolsView = new joint.dia.ToolsView({
+                tools: [verticesTool,]
+            });
             const linkView = link.findView(paper);
             linkView.addTools(toolsView)
             paper.on('link:mouseenter', function(linkView) {
@@ -211,7 +222,31 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState})
                 linkView.removeTools();
             });
         });
-    })
+    }, [firstRender, edges, nodes, currentState, startState])
+
+    useEffect(()=>{
+        if (!paper) return;
+
+        const handlePositionChange = (element: joint.dia.Element) => {
+            const id = element.id;
+            const x = element.attributes.position!.x;
+            const y = element.attributes.position!.y;
+            positionedNodes.current.map(node => node.id == id? node.position = {x:x, y:y} : node)
+        };
+
+        paper.on('element:pointerup', (elementView) => {
+            handlePositionChange(elementView.model);
+        });
+
+        paper.on('element:change:position', (element) => {
+            handlePositionChange(element);
+        });
+
+        return () => {
+            paper.off('element:pointerup');
+            paper.off('element:change:position');
+        };
+    },[paper])
     return (
         <div id="canvas" />
     )

@@ -11,7 +11,23 @@ function App() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [startState, setStartState] = useState<string>("");
+  const [currentState, setCurrentState] = useState<string>("");
   const [drawGraph, setDrawGraph] = useState<boolean>(false);
+  const [inputStringArr, setInputString] = useState<string[]>([]);
+  const [inputStringIndex, setInputIndex] = useState<number>(0);
+  const [runButtonDisabled, setRunButtonDisabled] = useState<boolean>(true);
+  const [stepButtonDisabled, setStepButtonDisabled] = useState<boolean>(true);
+  const [steps, setSteps] = useState<number>(0);
+  const [hasStacks, showStacks] = useState<boolean>(false);
+  const [stacks, setStacks] = useState<{[name: string]: Stack}>({});
+  const [hasQueues, showQueues] = useState<boolean>(false);
+  const [queues, setQueues] = useState<{[name: string]: Queue}>({});
+  const [hasTapes, showTapes] = useState<boolean>(false);
+  const [tapes, setTapes] = useState<{[name: string]: Tape}>({});
+  const [has2DTapes, show2DTapes] = useState <boolean>(false);
+  const [tapes_2D, setTapes2D] = useState<{[name: string]: Tape_2D}>({});
+
+  
 
   function parseMachine(): void{
     //Clear dictionaries
@@ -24,34 +40,36 @@ function App() {
     const inputString = input.value.trim()
 
     const memoryBlock = text.includes(".DATA")? splitText[1] : "";
-    const logicBlock = text.includes(".DATA")? splitText[3] : splitText[1]
+    const logicBlock = text.includes(".DATA")? splitText[3] : splitText[1];
     console.log(`memory block ${memoryBlock}\nlogic block ${logicBlock}`)
     
-    parseMemoryBlock(memoryBlock)
-    parseLogicBlock(logicBlock)
+    parseMemoryBlock(memoryBlock);
+    parseLogicBlock(logicBlock);
     generateMachineDiagram();
-    console.log("MEMORY AND STATES BEFORE RUN MACHINE")
-    console.log("STACKS")
-    console.log(Stacks)
-    console.log("QUEUES")
-    console.log(Queues)
-    console.log("TAPES")
-    console.log(Tapes)
-    console.log("2D TAPES")
-    console.log(Tapes_2D)
-    console.log("STATES")
-    console.log(States)
-    console.log("RUN MACHINE")
-    runMachine(inputString)
-    console.log("STACKS AND STATES AFTER RUN MACHINE")
-    console.log("STACKS")
-    console.log(Stacks)
-    console.log("QUEUES")
-    console.log(Queues)
-    console.log("TAPES")
-    console.log(Tapes_2D)
-    console.log("STATES")
-    console.log(States)
+    console.log("MEMORY AND STATES BEFORE RUN MACHINE");
+    console.log("STACKS");
+    console.log(Stacks);
+    console.log("QUEUES");
+    console.log(Queues);
+    console.log("TAPES");
+    console.log(Tapes);
+    console.log("2D TAPES");
+    console.log(Tapes_2D);
+    console.log("STATES");
+    console.log(States);
+    //Setup before running machine
+    MachineVariables.currentState = MachineVariables.startState
+    MachineVariables.inputTape.pushString(inputString);
+    MachineVariables.inputTape.printItems();
+    setRunButtonDisabled(false);
+    setStepButtonDisabled(false);
+    setSteps(0);
+    setInputString(MachineVariables.inputTape.getItems());
+    setInputIndex(0);
+    setStacks(Stacks);
+    setQueues(Queues);
+    setTapes(Tapes);
+    setTapes2D(Tapes_2D);
   }
 
   function parseMemoryBlock(memoryBlock: string): void{
@@ -64,16 +82,19 @@ function App() {
         switch(tokens[0]){
           case "STACK": {
             Stacks[tokens[1]] = new Stack(tokens[1])
+            showStacks(true);
             break;
           }
           case "QUEUE":{
             Queues[tokens[1]] = new Queue(tokens[1])
+            showQueues(true);
             break;
           }
           case "TAPE":{
             Tapes[tokens[1]] = new Tape(tokens[1])
             console.log("LOGGING TAPE")
             console.log(Object.keys(Tapes).length)
+            showTapes(true);
             if(Object.keys(Tapes).length == 1){
               MachineVariables.inputTape = Tapes[tokens[1]]
               console.log(MachineVariables.inputTape)
@@ -82,8 +103,9 @@ function App() {
           }
           case "2D_TAPE":{
             Tapes_2D[tokens[1]] = new Tape_2D(tokens[1])
-            console.log("LOGGING TAPE")
+            console.log("LOGGING 2D TAPE")
             console.log(Object.keys(Tapes_2D).length)
+            show2DTapes(true);
             if(Object.keys(Tapes_2D).length == 1){
               MachineVariables.inputTape = Tapes_2D[tokens[1]].getItemRow();
               console.log(MachineVariables.inputTape)
@@ -205,56 +227,166 @@ function App() {
       setDrawGraph(true);
   }
 
-  function runMachine(inputString: string){
-    let currentState: string = MachineVariables.startState;
-    let test: string[];
-    MachineVariables.inputTape.pushString(inputString);
-    MachineVariables.inputTape.printItems();
+  function runMachine(){
+    setStepButtonDisabled(true);
+    console.log("RUN MACHINE")
+    let nextState: string[];
     console.log("MACHINE VARIABLES BEFORE RUN")
     console.log(MachineVariables)
     while(!MachineVariables.end){
       console.log("LOOP DELIMITER")
-      console.log(`current state: ${currentState}`)
-      test = States[currentState].step();
-      if(test.length == 0){MachineVariables.end = true;}
-      currentState = test[0];
-      console.log(`state after step: ${test}`)
+      console.log(`current state: ${MachineVariables.currentState}`)
+      nextState = States[MachineVariables.currentState].step();
+      if(nextState.length == 0){MachineVariables.end = true;}
+      MachineVariables.currentState = nextState[0];
+      console.log(`state after step: ${nextState}`)
       console.log(`pointer: ${MachineVariables.inputTape.getPointer()}`)
       console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
-      console.log(Tapes_2D["T1"])
       console.log("--------------------------------")
     }
     console.log("MACHINE VARIABLES AFTER RUN")
     console.log(MachineVariables)
+    console.log("STACKS AND STATES AFTER RUN MACHINE")
+    console.log("STACKS")
+    console.log(Stacks)
+    console.log("QUEUES")
+    console.log(Queues)
+    console.log("TAPES")
+    console.log(Tapes_2D)
+    console.log("STATES")
+    console.log(States)
+  }
+
+  function handleSteps(){
+    setRunButtonDisabled(true);
+    let test: string[] = [];
+    if(!MachineVariables.end){
+      console.log("LOOP DELIMITER")
+      console.log(`current state: ${MachineVariables.currentState}`)
+      test = States[MachineVariables.currentState].step();
+      if(test.length == 0){MachineVariables.end = true;}
+      MachineVariables.currentState = test[0];
+      setInputIndex(MachineVariables.inputTape.getPointer());
+      setSteps(steps + 1);
+      setStacks(Stacks);
+      setQueues(Queues);
+      setTapes(Tapes);
+      setTapes2D(Tapes_2D);
+      console.log(`state after step: ${test}`)
+      console.log(`pointer: ${MachineVariables.inputTape.getPointer()}`)
+      console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
+      console.log("--------------------------------")
+    }
+    else{
+      setStepButtonDisabled(true);
+      console.log("MACHINE VARIABLES AFTER RUN")
+      console.log(MachineVariables)
+      console.log("STACKS AND STATES AFTER RUN MACHINE")
+      console.log("STACKS")
+      console.log(Stacks)
+      console.log("QUEUES")
+      console.log(Queues)
+      console.log("TAPES")
+      console.log(Tapes_2D)
+      console.log("STATES")
+      console.log(States)
+    }
   }
 
   function updateGraph(){
     setNodes(Nodes);
     setEdges(Edges);
     setStartState(MachineVariables.startState);
+    setCurrentState(MachineVariables.currentState);
+  }
+
+  function reset(){
+    setDrawGraph(false);
+    clearGlobals();
+    (document.getElementById("machine-textarea") as HTMLTextAreaElement).value = "";
+    (document.getElementById("machine-input") as HTMLInputElement).value = "";
+    setRunButtonDisabled(true);
+    setStepButtonDisabled(true);
   }
 
   return (
     <>
       <div className="card">
         <p>Machine Definition</p>
-        <textarea id="machine-textarea" cols={64} rows={36}></textarea>
+        <textarea id="machine-textarea" cols={48} rows={24}></textarea>
       </div>
       <div className="card">
         <p>Input String</p>
         <input id="machine-input"></input>
       </div>
       <div className="card">
-        <button onClick={function(){parseMachine(); updateGraph()}}>
+        <button id="load-button" onClick={function(){parseMachine(); updateGraph()}}>
+          Load
+        </button>
+        <button id="run-button" onClick={function(){runMachine(); updateGraph()}} disabled={runButtonDisabled}>
           Run
+        </button>
+        <button id="step-button" onClick={function(){handleSteps(); updateGraph()}} disabled={stepButtonDisabled}>
+          Step
+        </button>
+        <button id="reset-button" onClick={function(){reset()}}>
+          Reset
         </button>
       </div>
       {drawGraph &&
         <div className="card">
-          <DirectedGraph nodes={nodes} edges={edges} startState={startState}/>
+          <div className='subcard-container'>
+            {hasStacks &&
+              <div className='subcard'>
+                <h3 className='subcard-title'>Stacks</h3>
+                <p className='subcard-text'>
+                  {Object.entries(stacks).map(([key, value])=>
+                    `${key} : ${value.getItems()}`)
+                  }
+                </p>
+              </div>
+            }
+            {hasQueues &&
+              <div className='subcard'>
+                <h3 className='subcard-title'>Queues</h3>
+                <p className='subcard-text'>
+                  {Object.entries(queues).map(([key, value])=>
+                    `${key} : ${value.getItems()}`)
+                  }
+                </p>
+              </div>
+            }
+            {hasTapes &&
+              <div className='subcard'>
+                <h3 className='subcard-title'>Tapes</h3>
+                <p className='subcard-text'>
+                  {Object.entries(tapes).map(([key, value])=>
+                    `${key} : ${value.getItems()}`)
+                  }
+                </p>
+              </div>
+            }
+            {has2DTapes &&
+              <div className='subcard'>
+                <h3 className='subcard-title'>2D Tapes</h3>
+                <p className='subcard-text'>
+                  {Object.entries(tapes_2D).map(([key, value])=>
+                    `${key} : ${value.getItems()}`)
+                  }
+                </p>
+              </div>
+            }
+          </div>
+          
+          <div className="input-tape-card">
+            <h3 className='subcard-title'>Input</h3>
+            <p className='subcard-text'>
+              {inputStringArr.slice(0,inputStringIndex)}<mark>{inputStringArr[inputStringIndex]}</mark>{inputStringArr.slice(inputStringIndex+1, inputStringArr.length)}
+            </p>
+          </div>
+          <DirectedGraph nodes={nodes} edges={edges} startState={startState} currentState={currentState}/>
         </div>
       }
-
     </>
   )
 }

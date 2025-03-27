@@ -43,7 +43,7 @@ export class Stack {
         return this.name;
     }
 
-    printItems(): void {
-        console.log(this.items.toString())
+    getItems(): string[]{
+        return this.items;
     }
 }

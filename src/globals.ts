@@ -6,9 +6,14 @@ import { State } from "./State";
 export let Queues: {[name: string]: Queue} = {};
 export let Stacks: {[name: string]: Stack} = {};
 export let Tapes: {[name : string]: Tape} = {};
-export let States: {[name: string]: State} = {};
 export let Tapes_2D: {[name: string]: Tape_2D} = {};
-export let MachineVariables = {output: "", startState: "", hasAccept: false, hasReject: false, end: false, accept: false, reject: false, inputTape: new Tape("InputTape")};
+export let States: {[name: string]: State} = {};
+export let MachineVariables = {output: "", startState: "", 
+    hasAccept: false, hasReject: false, 
+    end: false, accept: false, reject: false, 
+    inputTape: new Tape("InputTape"),
+    currentState: ""
+};
 
 export function clearGlobals(): void{
     Queues = {};
@@ -26,7 +31,8 @@ export function clearGlobals(): void{
         end: false,
         accept: false,
         reject: false,
-        inputTape: new Tape("InputTape")
+        inputTape: new Tape("InputTape"),
+        currentState: ""
     }
 }
 

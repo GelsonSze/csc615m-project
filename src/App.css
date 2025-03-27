@@ -12,3 +12,64 @@
 .read-the-docs {
   color: #888;
 }
+
+button:disabled, button[disabled]{
+  color: white; /* Muted gray */
+  border: 1px solid #3a3a3a; /* Slight border */
+  cursor: not-allowed;
+  opacity: 0.3; /* Faded effect */
+}
+
+.input-tape-card{
+  background-color: #1a1a1a;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  text-align: center;
+  margin: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  width: 25%;
+  overflow: auto;
+  height: 80px;
+  max-height: fit-content;
+}
+
+.subcard-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.subcard{
+  flex: 1; /* Makes all divs take equal width */
+  background-color: #1a1a1a;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  text-align: center;
+  flex-direction: column;
+  align-items: flex-start; /* Aligns content to the left */
+  justify-content: center; /* Pushes the title to the top */
+  padding: 10px;
+  overflow: auto;
+  height: 100px;
+  min-height: 100px;
+  width: 25%;
+  max-width: 50%;
+  resize: vertical;
+}
+
+.subcard-title{
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+}
+
+.subcard-text{
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  font-size: calc(14px + 15%);
+}
