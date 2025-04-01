@@ -59,23 +59,19 @@ function calculateLayout (nodes: Node[], edges: Edge[]) {
     return positionedNodes;
 };
 
+
 const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState, currentState})=>{
-    const [firstRender, setFirstRender] = useState<boolean>(true);
     const graphRef = useRef<joint.dia.Graph>(null);
     const [paper, setPaper] = useState<joint.dia.Paper | null>(null);
     const positionedNodes = useRef<Node[]>([]);
 
     useEffect(()=>{
+        positionedNodes.current = calculateLayout(nodes,edges);
+    }, [nodes, edges])
+
+    useEffect(()=>{
         const graph = new joint.dia.Graph();
         graphRef.current = graph;
-        console.log("TESTING RENDER")
-        console.log(firstRender)
-        if(firstRender){
-            positionedNodes.current = calculateLayout(nodes,edges);
-            setFirstRender(false);
-            console.log(positionedNodes)
-        }
-        console.log(positionedNodes)
         const paper = new joint.dia.Paper({
             el: document.getElementById("canvas"),
             model: graph,
@@ -92,7 +88,6 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState, 
         });
         // paperRef.current = paper;
         setPaper(paper);
-
         const nodeMap: { [key: string]: joint.shapes.standard.Rectangle } = {};
 
         positionedNodes.current.forEach((node) => {
@@ -187,10 +182,7 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState, 
                     padding: 10, // Adjust this to make the loop smaller
                     maxAllowedDirectionChange: 180
                 }} : {name: "normal"},
-                connector: edge.source == edge.target? {name: "rounded", radius: 8} : {name: "smooth", args:{
-
-                }
-                },
+                connector: edge.source == edge.target? {name: "rounded", radius: 8} : {name: "smooth", args:{}},
             });
             if(edge.source !== edge.target){
                 const x = nodeMap[edge.source].attributes.position!.x
@@ -213,16 +205,14 @@ const DirectedGraph: React.FC<DirectedGraphProps> = ({nodes, edges, startState, 
             const toolsView = new joint.dia.ToolsView({
                 tools: [verticesTool,]
             });
-            const linkView = link.findView(paper);
-            linkView.addTools(toolsView)
             paper.on('link:mouseenter', function(linkView) {
-                linkView.addTools(toolsView);
+                    linkView.addTools(toolsView);
             });
             paper.on('link:mouseleave', function(linkView) {
                 linkView.removeTools();
             });
         });
-    }, [firstRender, edges, nodes, currentState, startState])
+    }, [nodes, edges, currentState, startState])
 
     useEffect(()=>{
         if (!paper) return;

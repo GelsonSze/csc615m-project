@@ -15,12 +15,12 @@ export class Queue {
     dequeue(): string | undefined {
         const symbol = this.items.shift();
         if(symbol == undefined){
-            return "#";
+            return "";
         }
         return symbol;
     }
 
-    nextSymbol(): string{
+    getSymbol(): string{
         return this.items[0]
     }
 

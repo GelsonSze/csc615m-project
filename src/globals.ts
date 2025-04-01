@@ -40,7 +40,7 @@ export function clearGlobals(): void{
 export interface Node {
     id: string;
     label: string;
-    position: { x: number; y: number };
+    position: { x: number, y: number };
 }
 export interface Edge {
     source: string;

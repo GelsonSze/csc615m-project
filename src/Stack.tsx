@@ -15,12 +15,12 @@ export class Stack {
     pop(): string | undefined {
         const symbol = this.items.pop();
         if(symbol == undefined){
-            return "#";
+            return "";
         }
         return symbol;
     }
 
-    nextSymbol(): string{
+    getSymbol(): string{
         return this.items[this.items.length-1]
     }
     

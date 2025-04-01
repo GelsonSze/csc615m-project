@@ -32,6 +32,11 @@ function App() {
   function parseMachine(): void{
     //Clear dictionaries
     clearGlobals();
+    //Reset memory visuals
+    showStacks(false);
+    showQueues(false);
+    showTapes(false);
+    show2DTapes(false);
 
     const textArea = document.getElementById("machine-textarea") as HTMLTextAreaElement;
     const text: string = textArea.value.trim()
@@ -244,41 +249,50 @@ function App() {
       console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
       console.log("--------------------------------")
     }
-    console.log("MACHINE VARIABLES AFTER RUN")
-    console.log(MachineVariables)
-    console.log("STACKS AND STATES AFTER RUN MACHINE")
-    console.log("STACKS")
-    console.log(Stacks)
-    console.log("QUEUES")
-    console.log(Queues)
-    console.log("TAPES")
-    console.log(Tapes_2D)
-    console.log("STATES")
-    console.log(States)
+    // console.log("MACHINE VARIABLES AFTER RUN")
+    // console.log(MachineVariables)
+    // console.log("STACKS AND STATES AFTER RUN MACHINE")
+    // console.log("STACKS")
+    // console.log(Stacks)
+    // console.log("QUEUES")
+    // console.log(Queues)
+    // console.log("TAPES")
+    // console.log(Tapes_2D)
+    // console.log("STATES")
+    // console.log(States)
   }
 
   function handleSteps(){
     setRunButtonDisabled(true);
-    let test: string[] = [];
+    let nextStates: string[] = [];
     if(!MachineVariables.end){
       console.log("LOOP DELIMITER")
       console.log(`current state: ${MachineVariables.currentState}`)
-      test = States[MachineVariables.currentState].step();
-      if(test.length == 0){MachineVariables.end = true;}
-      MachineVariables.currentState = test[0];
+      nextStates = States[MachineVariables.currentState].step();
+      if(nextStates.length == 0){
+        MachineVariables.end = true;
+        console.log("MACHINE VAR END TRUE")
+      }
+      MachineVariables.currentState = nextStates[0];
       setInputIndex(MachineVariables.inputTape.getPointer());
       setSteps(steps + 1);
       setStacks(Stacks);
       setQueues(Queues);
       setTapes(Tapes);
       setTapes2D(Tapes_2D);
-      console.log(`state after step: ${test}`)
+      console.log(`state after step: ${nextStates}`)
       console.log(`pointer: ${MachineVariables.inputTape.getPointer()}`)
       console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
       console.log("--------------------------------")
     }
-    else{
+    if(MachineVariables.end){
       setStepButtonDisabled(true);
+      if(MachineVariables.hasAccept || MachineVariables.hasReject){
+        if(MachineVariables.accept == false){
+          MachineVariables.reject = true;
+          console.log("MACHINE VAR REJECT TRUE")
+        }
+      }
       console.log("MACHINE VARIABLES AFTER RUN")
       console.log(MachineVariables)
       console.log("STACKS AND STATES AFTER RUN MACHINE")
@@ -377,12 +391,25 @@ function App() {
               </div>
             }
           </div>
-          
-          <div className="input-tape-card">
-            <h3 className='subcard-title'>Input</h3>
-            <p className='subcard-text'>
-              {inputStringArr.slice(0,inputStringIndex)}<mark>{inputStringArr[inputStringIndex]}</mark>{inputStringArr.slice(inputStringIndex+1, inputStringArr.length)}
-            </p>
+          <div className='subcard-container'>
+            <div className="input-tape-card">
+              <h3 className='subcard-title'>Output</h3>
+              <p className='subcard-text'>
+                {MachineVariables.output? MachineVariables.output : "Empty"}
+              </p>
+            </div>
+            <div className="input-tape-card">
+              <h3 className='subcard-title'>Input</h3>
+              <p className='subcard-text'>
+                {inputStringArr.slice(0,inputStringIndex)}<mark>{inputStringArr[inputStringIndex]}</mark>{inputStringArr.slice(inputStringIndex+1, inputStringArr.length)}
+              </p>
+            </div>
+            <div className="input-tape-card">
+              <h3 className='subcard-title'>Status</h3>
+              <p className='subcard-text'>
+                {MachineVariables.accept? "Accepted": MachineVariables.reject? "Rejected": MachineVariables.end? "Ended": "Ongoing"}
+              </p>
+            </div>
           </div>
           <DirectedGraph nodes={nodes} edges={edges} startState={startState} currentState={currentState}/>
         </div>

@@ -159,10 +159,6 @@ export class ReadState extends State{
                 destStates.push(transition.dest)
             }
         })
-        if(destStates.length == 0){throw Error(`Read symbol has no valid state transtitions
-            Memory object: ${this.memoryObject}, Read symbol: ${readSymbol}
-            `)}
-
         return destStates
     }
 }
