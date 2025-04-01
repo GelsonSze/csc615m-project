@@ -5,7 +5,7 @@ import {Stack} from './Stack'
 import {Tape, Tape_2D} from './Tape'
 import {WriteState, MoveState, StateTypes, PrintState, ScanState, ReadState} from './State';
 import DirectedGraph from './DirectedGraph';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 function App() {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -235,31 +235,48 @@ function App() {
   function runMachine(){
     setStepButtonDisabled(true);
     console.log("RUN MACHINE")
-    let nextState: string[];
+    let nextStates: string[] = [];
     console.log("MACHINE VARIABLES BEFORE RUN")
     console.log(MachineVariables)
     while(!MachineVariables.end){
       console.log("LOOP DELIMITER")
       console.log(`current state: ${MachineVariables.currentState}`)
-      nextState = States[MachineVariables.currentState].step();
-      if(nextState.length == 0){MachineVariables.end = true;}
-      MachineVariables.currentState = nextState[0];
-      console.log(`state after step: ${nextState}`)
+      nextStates = States[MachineVariables.currentState].step();
+      if(nextStates.length == 0){
+        MachineVariables.end = true;
+        console.log("MACHINE VAR END TRUE")
+      }
+      MachineVariables.currentState = nextStates[0];
+      setInputIndex(MachineVariables.inputTape.getPointer());
+      setStacks(Stacks);
+      setQueues(Queues);
+      setTapes(Tapes);
+      setTapes2D(Tapes_2D);
+      console.log(`state after step: ${nextStates}`)
       console.log(`pointer: ${MachineVariables.inputTape.getPointer()}`)
       console.log(`pointer symbol: ${MachineVariables.inputTape.getPointerSymbol()}`)
       console.log("--------------------------------")
     }
-    // console.log("MACHINE VARIABLES AFTER RUN")
-    // console.log(MachineVariables)
-    // console.log("STACKS AND STATES AFTER RUN MACHINE")
-    // console.log("STACKS")
-    // console.log(Stacks)
-    // console.log("QUEUES")
-    // console.log(Queues)
-    // console.log("TAPES")
-    // console.log(Tapes_2D)
-    // console.log("STATES")
-    // console.log(States)
+    if(MachineVariables.end){
+      setRunButtonDisabled(true);
+      if(MachineVariables.hasAccept || MachineVariables.hasReject){
+        if(MachineVariables.accept == false){
+          MachineVariables.reject = true;
+          console.log("MACHINE VAR REJECT TRUE")
+        }
+      }
+      console.log("MACHINE VARIABLES AFTER RUN")
+      console.log(MachineVariables)
+      console.log("STACKS AND STATES AFTER RUN MACHINE")
+      console.log("STACKS")
+      console.log(Stacks)
+      console.log("QUEUES")
+      console.log(Queues)
+      console.log("TAPES")
+      console.log(Tapes_2D)
+      console.log("STATES")
+      console.log(States)
+    }
   }
 
   function handleSteps(){
@@ -355,8 +372,11 @@ function App() {
                 <h3 className='subcard-title'>Stacks</h3>
                 <p className='subcard-text'>
                   {Object.entries(stacks).map(([key, value])=>
-                    `${key} : ${value.getItems()}`)
-                  }
+                    <React.Fragment>
+                      {`${key} : ${value.getItems()}`}
+                      <br/>
+                    </React.Fragment>
+                  )}
                 </p>
               </div>
             }
@@ -365,8 +385,11 @@ function App() {
                 <h3 className='subcard-title'>Queues</h3>
                 <p className='subcard-text'>
                   {Object.entries(queues).map(([key, value])=>
-                    `${key} : ${value.getItems()}`)
-                  }
+                    <React.Fragment>
+                      {`${key} : ${value.getItems()}`}
+                      <br/>
+                    </React.Fragment>
+                  )}
                 </p>
               </div>
             }
@@ -375,8 +398,11 @@ function App() {
                 <h3 className='subcard-title'>Tapes</h3>
                 <p className='subcard-text'>
                   {Object.entries(tapes).map(([key, value])=>
-                    `${key} : ${value.getItems()}`)
-                  }
+                    <React.Fragment>
+                      {`${key} : ${value.getItems()}`}
+                      <br/>
+                    </React.Fragment>
+                  )}
                 </p>
               </div>
             }
@@ -385,8 +411,14 @@ function App() {
                 <h3 className='subcard-title'>2D Tapes</h3>
                 <p className='subcard-text'>
                   {Object.entries(tapes_2D).map(([key, value])=>
-                    `${key} : ${value.getItems()}`)
-                  }
+                    <React.Fragment key={key}>
+                        {`${key} : `}<br/>{value.getItems().split("<br/>").filter(i=>i).map((line)=>(
+                        <React.Fragment>
+                            {line}<br />
+                        </React.Fragment>
+                      ))}
+                    </React.Fragment>
+                  )}
                 </p>
               </div>
             }

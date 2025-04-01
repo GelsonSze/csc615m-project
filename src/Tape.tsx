@@ -29,13 +29,15 @@ export class Tape {
     // Replace symbol of pointed index onto the tape
     replace(newSymbol: string): void{
         this.items[this.pointer] = newSymbol;
-    }
+    }   
 
     movePointerRight(): void{
         this.pointer += 1;
-        if(this.pointer >= this.items.length){
+        if(this.pointer >= this.items.length-1){
             this.items.push("#");
         }
+        console.log("CHECKING TAPE ITEMS")
+        console.log(this.items)
     }
 
     movePointerLeft(): void{
@@ -111,7 +113,7 @@ export class Tape_2D {
 
     movePointerRight(): void{
         this.pointer_y += 1;
-        if(this.pointer_y > this.items[this.pointer_x].getLength()){
+        if(this.pointer_y >= this.items[this.pointer_x].getLength()-1){
             for(const key in this.items){
                 this.items[key].pushString("#");
             }
@@ -175,7 +177,14 @@ export class Tape_2D {
         return this.name
     }
 
-    getItems(): {[name: string]: Tape}{
-        return this.items
+    getItems(): string{
+        const keys = Object.keys(this.items).map(Number);
+        let tapegrid: string = ""
+        keys.sort((a , b) => b- a);
+        for(let i = 0; i < keys.length; i++){
+            this.items[keys[i]].getItems().forEach(str=>tapegrid+=str);
+            tapegrid+='<br/>';
+        }
+        return tapegrid
     }
 }
