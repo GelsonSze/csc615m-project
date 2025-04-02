@@ -89,7 +89,7 @@ export class PrintState extends State{
         const destStates: string[]= [];
         transitionArr.forEach((transition)=>{
             MachineVariables.output += transition.symbol
-            console.log("WHY NO WORK?")
+            console.log("PRINTING")
             console.log(MachineVariables.output)
             destStates.push(transition.dest)
         })
@@ -177,7 +177,7 @@ export class MoveState extends State{
         let curSymbol: string;
 
         if(this.getType() == StateTypes.r){
-            console.log("THIS RIGHT TAPE IS ANNOYING")
+            console.log("MOVE RIGHT TAPE")
             console.log(Tapes[this.memoryObject])
             if(this.memoryObject in Tapes){
                 Tapes[this.memoryObject].movePointerRight();
@@ -189,7 +189,7 @@ export class MoveState extends State{
             }
         }
         else if(this.getType() == StateTypes.l){
-            console.log("THIS LEFT TAPE IS ANNOYING")
+            console.log("MOVE LEFT TAPE")
             console.log(Tapes[this.memoryObject])
             if(this.memoryObject in Tapes){
                 Tapes[this.memoryObject].movePointerLeft();
